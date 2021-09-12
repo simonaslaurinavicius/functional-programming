@@ -1,0 +1,67 @@
+“Playing” with ghci (Haskell interpreter)
+
+
+1. Choose or create folder for your Haskell projects, e.g. Work/haskell
+
+2. Open Terminal window and change your working directory to your haskell folder
+
+3. Start ghci — Haskell interpreter. ghci — interactive environment supporting REPL (read-eval-print-loop) mode
+
+4. ghci starts with the module Prelude loaded. Prelude — a library of standard Haskell functions. Can be turned off or replaced with an alternative  
+
+5. Everything in Haskell is either expression (that can be fully or partially evaluated/reduced) or declaration (naming or binding an expression). Usually combined together, e.g., declaration with an expression on the right hand side of equality  
+
+6. Try to evaluate Haskell expressions (without commas and ignoring single quotes ’..’)
+	‘2+2’,  ‘5/2’, ‘7<9’, ‘10^7’, ‘length “abc” ’, ‘div 15 2’, ‘mod 5 2 == 1’, ‘True /= False’, ‘negate 10’
+
+7. By default, the evaluation result is implicitly declared as the value of the identifier ‘it’. Repeat some of previous or try your own expressions and then check/evaluate ‘Prelude> it’ 
+
+8. The declaration syntax in ghci is ‘<identifier> = <expression>’. It can be several equation declarations for the same identifier.
+
+9. Store some results of the previous expressions by making simple declarations, e.g. ‘Prelude> x = div 15 2’
+
+10. Operators like +, /, <, ^ … are functions too, which are by default infix, i.e., used between arguments. The function with lowercase letter names are by default prefix, i.e., their names go before the given arguments. We can change that by putting operators in parentheses, thus making them prefix, e.g., ‘(+) 2 2’, or putting lowercase function names between `…`, thus making them infix, e.g., ’15 `div` 2’. Note the difference between various single quotes. Experiment with some your own examples
+
+11. To leave the ghci environment, use the interpreter command :quit or its short version :q
+
+Or you can use Ctrl + D
+
+12. Some other interpreter commands: :help or :h (list of interpreter commands), :info or :i <identifier> (general info about concrete loaded declaration/identifier), :browse <module_name> (available declarations of a loaded module), :type or :t <expression or identifier> (the type of an evaluated expression or declaration). Try ‘:browse Prelude’, ‘:info length’, ‘:info (+)’, … For operators, :info gives also information about their precedence power and associativity, e.g., ‘infixl 6 +’ (left associative with power 6)
+
+A left-associative (right-associative) operation is a non-associative operation that is conventionally evaluated from left to right (right to left)
+Power kind of denotes the class in operator precedence table
+
+13. Each expression and declaration in Haskell has the associated type, which can be checked by the command :type or :t.  Try to check the types of some your declarations, such as ‘it’, ‘negate’, ‘mod’, ‘(<)’, ‘(^)’, … What happens if we check ‘:type (/) 7’, ‘:type mod 5’ , … ?
+
+It returns a function
+
+14. ghci prints the evaluation results, if they are “printable”, thus ‘Prelude> 10 ^ 7’ is evaluated to ‘10000000’. What happens, if we try ‘Prelude> negate’ or ‘Prelude> (^)’ . Error with the cryptic message: “No instance for (Show (a0 -> b0 -> a0)) arising from a use of ‘print’”
+
+15. The meaning: there is no defined way to print function values. Haskell prints all the values of concrete types, for which the function ‘show’ (converting a value into a string) is defined. Try ‘:info show’, ‘:t show’, ‘show 25’, ‘show True’, …
+
+16. Other errors: try to evaluate ‘2 + True’. Error: “No instance for (Num Bool) arising from a use of ‘+’”. Translation: there is no available overridden version of  ’+’ , defined for numbers and booleans values.
+
+(Num Bool) - Num comes from the type class the (+) function accepts and Bool is a type of True, the value we are passing to (+) function
+
+17. Other errors: try to evaluate ‘2 + ’. Error: “parse error (possibly incorrect indentation or mismatched brackets)”. Translation: a syntax error. 
+
+18. Other errors: try ‘:t tripple’. Error: “Variable not in scope: tripple”. Translation: no such declaration available
+
+19. Declaration of your own functions/operators : a function name followed with parameters, equality, and the result expression, e.g.,  ‘tripple x = x*3’, ‘myadd x y = 10*x+y’, ‘(+++) x y = x*x + y*y’. The last one is an operator. Check their types and apply them with concrete arguments
+
+(+++) being an operator means that it can be used infix!
+
+20. Constraining their types as a part of declaration (recommended):  ‘tripple :: Int -> Int; tripple x = x*3’. Semicolon combines several declarations/expressions into one. This is needed only when typing directly in ghci
+
+I think the reason for that will come in the later lectures
+
+21. Anonymous functions (lambda expressions): ‘\x -> x*3’. The above declaration  ‘tripple x = x*3’ is the same as ‘tripple =  \x -> x*3’. An example of “syntactic sugaring” making standard notation available.  Again, a (function) declaration is a binding/naming of a specific expression
+
+22. Create and load your own module/source code from a file, starting with the line ‘module <name> where’. For instance, create file FirstScript.hs (or rename it as you wish) in your haskell folder according to the example from the lecture slides. The file name should be the same as the module name inside.
+
+23. Note that, in a module, if the next line is indented in the same way, it indicates a start of a new declaration (no semicolon is needed as in ghci).      
+
+24. Load it into ghci by the command ‘:load <filename>’ or ‘:l <filename>’. If succesfully compiled and loaded, ‘Prelude’ will be replaced by your module name.
+
+25. Experiment by changing the file definitions. Add your own declarations. For instance, write a function that checks that the given parameter is equal (==) to the value of ‘size’. (Recall how ‘mod 5 2 == 1’ was evaluated). Reload the updated version by using the ghci command :r
+  
