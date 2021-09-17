@@ -1,0 +1,201 @@
+Questions for lecture 2
+
+Pure functional language can be thought of as directly translating to
+corresponding lambda expressions.
+
+This makes Haskell programs applicable to all theoretical results of
+the lambda calculus
+
+Remember the transformations:
+
+Alpha equivalence:
+\lambda x.x | \lambda y.y | \lambda z.z - These three abstractions
+are all equivalent, they are all the same function. This is called
+alpha equivalence.
+
+**The actual parameter name does not matter** (better readability)
+
+Beta reduction:
+
+Essentially, a function application.
+
+Eliminate the head of abstraction, since it's only purpose was to
+bind a variable.
+
+(\lambda x.x + 1) 2 => { beta reduction, [a := b] <=> substitution }
+(x + 1)[x := 2] => { applying the substitution }
+2 + 1 => { simplifying }
+3
+
+Function application is **left-associative**
+
+Free variables!
+
+Variables that are not named in the abstracion head (not bound)
+are called free variables.
+
+They are not affected by beta reduction and (!) we can't apply
+alpha equivalence if it makes a free variable into bound.
+
+\lambda x . x y != \lambda y . y y (can not be applied!)
+
+Multiple arguments and currying
+
+Each lambda expression can only bind one parameter and accept only one argument
+
+Standard notation \lambda x y . ... is a shorthand (syntactic sugar)
+for:
+
+\lambda x. (\lambda y). ...
+
+When you apply it once (beta reduction), you eliminate the leftmost
+head, and so on...
+
+This principle is called currying (named after mathematician Haskell
+Brooks Curry)
+
+Principle behind partial function application and currying!
+
+Each function in Haskell, e.g.,
+
+double :: Integer -> Integer
+double n = 2 * n
+
+is actually declared as (is a syntactic sugar for) a nambed lambda
+expression
+
+double = \n -> 2 * n
+
+and this is how it will be stored in memory from Haskell's point
+of view, an anonymous function (lambda expression) with a name
+double bound to it.
+
+Function definitions in Haskell must be fully defined as closed 
+expressions (without undefined free variables or identifiers)
+
+
+double :: Integer -> Integer
+double n = 2 * n 
+
+Closed because the only variable n is function parameter
+
+square_1 :: Integer -> Integer
+square_1 n = square (n + 1)
+
+The definition for square_1 is closed, provided (!!) "free" 
+variable square is defined!
+
+What's the difference between variable and identifier?
+
+
+CLOSURES
+
+The idea is that "free" variables/identifiers should be resolved
+(during compilation/interpretation) from the local context (scope)
+
+The local context are previous definitions (GHCi), the whole file
+(module description) or values/function definitions from imported
+modules.
+
+The process of resolving "free" variables and the resulting
+definition is called closure (or a function with it's environment)
+
+Once closure successfully calculated, the function definition stays
+fixed (pure function - same input, same output)
+
+Libraries - precompiled modules.
+
+Can use indentation when defining a long function to denote that it
+is the same block
+
+The pattern in Haskell is to use single lines for functions and 
+describe them using pattern matching, let's take an exlusive OR
+as an example:
+
+We can define it like this
+
+xor :: Bool -> Bool -> Bool
+xor x y = (x || y) && not (x && y)
+
+but it looks very clunky, we might do it more elegantly
+like this:
+
+/* pm stands for pattern matching */
+xor_pm :: Bool -> Bool -> Bool
+xor_pm True x = not x
+
+Simple and beautiful example of pattern matching, wow!
+Also, more than one equation in a function declaration.
+
+When using QuickCheck, the pattern for defining test case is using
+
+prop_***, where prop denotes property and *** is the test case name
+
+Other example of pattern matching
+
+myOr :: Bool -> Bool -> Bool
+myOr True _ = True
+myOr _ True = True
+myOr _ _ = False
+
+These are evaluated in the order of appearance, so if we use 
+myOr _ _ as the first case, it will always return False, also the
+compiler gives a warning when the pattern matching is not exhaustive
+
+
+Int vs Integer
+
+Int is bounded by variables minBound and maxBound. The values of
+these variables depend on the implementation of Haskell and the
+computer architecture.
+
+In contrast, Integer is theoretically infinite (bounded only by the
+computer memory), basically an ADT of Big Integer.
+
+Function type is generic/polymorphic, these terms can be used interchangeably when talking about type signatures with type variables
+
+
+Guards (alternative to pattern matching)
+
+name x1 x2 ... xk
+  | g1 = res1
+  | g2 = res2
+  ...
+  | otherwise = res
+
+The guards are evaluated in the order they are presented. The next
+guard is checked only after the previous one has failed.
+
+If you did not exhaust all the cases, you will get a warning, rather
+than an error.
+
+Can be viewed as a different syntax for traditional if ... then ...
+else.
+
+If expression can be convenient in some cases, however guards in
+general are more expressive and readable (Haskell way!).
+
+Primitive recursion - based on primitive induction principle of
+natural numbers 
+
+General template:
+  fun n
+    | n==0 = ...
+    | n > 0 = ... fun(n - 1)
+
+First branch - defines the base case
+Second branch - defines the recursive case (inductive case)
+
+Such template guarantees termination of recursion.
+
+Basically using guards as a template for recursion
+
+fact :: Integer -> Integer
+fact n
+  | n == 0 = 1
+  | n > 0 = fact(n - 1) * n
+
+to deal with fact (-1) and "non-exhaustive error" resulting from 
+that, we can define our own `otherwise` error
+
+  | otherwise = error "Only defined for natural numbers"
