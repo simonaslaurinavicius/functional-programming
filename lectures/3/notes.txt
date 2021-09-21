@@ -1,0 +1,34 @@
+Questions/Notes for lecture 3
+
+Exceptions cannot be compared in a standard way (==),
+this lead to a failure inside quickCheck
+
+Local definitions - a way to store some intermediate result to avoid
+recomputing it over again.
+
+Scope defines the program part where a particular definition can be used
+
+If there are several visible variables with the same name defined,
+the most local one is used
+
+Separate functions for conversion between strings and integers
+
+show :: Show a => a -> String
+
+and
+
+read :: Read a => String -> a,
+when converting a String to an integer, we need to specify to
+what we want to convert --
+
+read "5" => Error
+read "5" :: Int => 5
+read "5" :: Float => 5.0
+read "5" :: Double => 5.0
+
+Main difference between lists and tuples is that
+lists must be comprised of the objects with the same (!!) type,
+while objects inside tuple can be of a different(!!) type!
+
+
+(...) is called a tuple constructor
