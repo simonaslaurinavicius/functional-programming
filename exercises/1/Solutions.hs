@@ -7,7 +7,7 @@
   Author: Simonas Laurinavicius
   Study program, course, group: Informatics, 4, 1
   Email: simonas.laurinavicius@mif.stud.vu.lt
-  Last updated: 2021-09-18
+  Last updated: 2021-09-20
 -}
 
 module Solutions where
@@ -31,10 +31,16 @@ nAnd_2 True x = not x
 nAnd_2 False _ = True
 
 nAnd_3 :: Bool -> Bool -> Bool
-nAnd_3 False False = True
-nAnd_3 True False = True
-nAnd_3 False True = True
 nAnd_3 True True = False
+nAnd_3 _ _ = True
+
+{-
+  Dumb truth table
+    nAnd_3 False False = True
+    nAnd_3 True False = True
+    nAnd_3 False True = True
+    nAnd_3 True True = False
+-}
 
 {-
   Exercise 2 -
@@ -49,8 +55,7 @@ prop_nAnds x y =
 
 -- Defining an additional property
 prop_nAnds_2 :: Bool
-prop_nAnds_2 =
-  (nAnd True True && nAnd_2 True True && nAnd_3 True True) == False
+prop_nAnds_2 = nAnd True True == False
 
 -- Test can be done in GHCi using `quickCheck prop_nAnds(_2)` command
 
@@ -62,7 +67,7 @@ prop_nAnds_2 =
 
 nDigits :: Integer -> Int
 nDigits n
-  | n >= 0 = (length . show) n
+  | n >= 0 = length (show n)
   | otherwise = (length . show) (-n)
 
 {-
@@ -86,22 +91,26 @@ nRoots a b c
     for the given real coefficients a, b, and c.
 -}
 
-rootHelper :: Float -> Float -> Float -> ((Float, Float) -> Float) -> Float
-rootHelper a b c extrema
+type Roots = (Float, Float)
+
+rootHelper :: (Roots -> Float) -> Float -> Float -> Float -> Float
+rootHelper extrema a b c
   | nRoots a b c == 0 = error "there are no roots for the coefficients!"
   | nRoots a b c == 1 = fst (roots a b c)
   | nRoots a b c == 2 = extrema (roots a b c)
 
 smallerRoot :: Float -> Float -> Float -> Float
-smallerRoot a b c = rootHelper a b c (minimum)
+smallerRoot a b c = rootHelper minimum a b c
 
 largerRoot :: Float -> Float -> Float -> Float
-largerRoot a b c = rootHelper a b c (maximum)
+largerRoot a b c = rootHelper maximum a b c
 
-roots :: Float -> Float -> Float -> (Float, Float)
+roots :: Float -> Float -> Float -> Roots
 roots a b c =
-  (((-b) + sqrt (b ^ 2 - 4 * a * c)) / (2 * a),
-  ((-b) - sqrt (b ^ 2 - 4 * a * c)) / (2 * a))
+  (((-b) + sqrt discriminant) / (2 * a),
+  ((-b) - sqrt discriminant) / (2 * a))
+  where
+    discriminant = b ^ 2 - 4 * a * c
 
 
 {-
@@ -113,9 +122,9 @@ roots a b c =
 
 power2 :: Integer -> Integer
 power2 n
-  | n == 1 = 2
-  | n > 1 = 2 * power2 (n - 1)
-  | otherwise = 0
+  | n == 0 = 1
+  | n > 0 = 2 * power2 (n - 1)
+  | otherwise = error "negative argument!"
 
 {-
   Exercise 7 -
@@ -126,8 +135,7 @@ power2 n
 
 mult :: Integer -> Integer -> Integer
 mult m n
-  | m == 1 = n
-  | m > 1 = n + mult (m - 1) n
+  | m >= 1 = n + mult (m - 1) n
   | m < 0 = - mult (-m) n
   | otherwise = 0
 
@@ -140,8 +148,8 @@ mult m n
 
 prod :: Integer -> Integer -> Integer
 prod m n
-  | n - m == 0 = n
-  | n - m > 0 = m * prod (m + 1) n
+  | n == m = n
+  | n > m = m * prod (m + 1) n
   | otherwise = error "invalid range, first parameter must be less than second!"
 
 {-
