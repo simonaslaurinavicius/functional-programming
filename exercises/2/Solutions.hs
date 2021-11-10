@@ -7,7 +7,7 @@
   Author: Simonas Laurinavicius
   Study program, course, group: Informatics, 4, 1
   Email: simonas.laurinavicius@mif.stud.vu.lt
-  Last updated: 2021-10-17
+  Last updated: 2021-11-10
 -}
 
 module Solutions where
@@ -30,7 +30,8 @@ average xs = (sum xs) / fromIntegral (length xs)
   sum :: (Foldable t, Num a) => t a -> a, thus
   it returns a Float for a Float list.
 
-  length :: Foldable t => t a -> Int, thus it returns an Int
+  length :: Foldable t => t a -> Int, thus it returns an Int, which is
+  from Integral type class
 
   (/) :: Fractional a => a -> a -> a, Int (an instance of the type class
   Integral) is not inside Fractional type class, so it must be converted using
@@ -54,7 +55,8 @@ average xs = (sum xs) / fromIntegral (length xs)
 
 -- Recursive solution
 divides :: Integer -> [Integer]
-divides n = divides' n 2 [1]
+-- Starting from 2 and adding 1 to divisors, as every number is divisible by 1
+divides n = divides' (abs n) 2 [1]
   where
     divides' n divisor divisors
       | n == divisor = divisors ++ [n]
@@ -63,11 +65,12 @@ divides n = divides' n 2 [1]
 
 -- List comprehension solution
 divides2 :: Integer -> [Integer]
-divides2 n = [x | x <- [1..n], mod n x == 0]
+divides2 n = [x | x <- [1..(div n' 2)], mod n' x == 0] ++ [n']
+  where n' = (abs n)
 
 isPrime :: Integer -> Bool
 isPrime n
-  | n < 0 = error "negative number provided!"
+  | n < 0 = error "negative number provided!" -- False was also applicable
   | otherwise = divides2 n == [1, n]
 
 {-
@@ -85,13 +88,11 @@ isPrime n
 prefix :: String -> String -> Bool
 prefix [] _ = True
 prefix _ [] = False -- To make this function argument order-agnostic, change this to True
-prefix (x:xs) (y:ys)
-  | x == y = prefix xs ys
-  | otherwise = False
+prefix (x:xs) (y:ys) = x == y && prefix xs ys
 
 substring :: String -> String -> Bool
 substring _ [] = False -- To make this function argument order-agnostic, remove this
-substring st1 st2@(x:xs) = prefix st1 st2 || substring st1 xs
+substring st1 st2@(_:xs) = prefix st1 st2 || substring st1 xs
 
 {-
   Exercise 4
@@ -108,6 +109,15 @@ permut xs ys = sort xs == sort ys
 -- There were no restrictions on whether using additional libraries were allowed,
 -- if not, then I would reuse quickSort algorithm from Lecture 5 and would still
 -- sort it first and then compare it.
+
+{-
+  quickSort :: [Integer] -> [Integer]
+  quickSort [] = []
+  quickSort  (x:xs) = quickSort less_eq_than_x ++ [x] ++ quickSort greater_than_x
+    where
+      less_eq_than_x = [y | y <- xs, y <= x]
+      greater_than_x = [y | y <- xs, y > x]
+-}
 
 {-
   Exercise 5
@@ -158,20 +168,21 @@ toUpper' chr
 
 itemTotal :: [(String, Float)] -> [(String, Float)]
 itemTotal [] = []
-itemTotal basket@(x:_) = mergeItems filtered_items ++ itemTotal remaining_items
+itemTotal basket@((item,_):_) = (item, summed_price) : itemTotal remaining_items
   where
-    filtered_items = [y | y <- basket, fst y == fst x]
-    remaining_items = [y | y <- basket, fst y /= fst x]
-
-mergeItems :: [(String, Float)] -> [(String, Float)]
-mergeItems items = [(fst (head items), price_sum)]
-  where
-    price_sum = foldl (\acc x -> acc + snd x) 0 items
-
+    summed_price = sum [price | (item',price) <- basket, item' == item]
+    remaining_items = [y | y@(item',_) <- basket, item' /= item]
 
 itemDiscount :: String -> Integer -> [(String, Float)] -> [(String, Float)]
-itemDiscount item discount basket = map applyDiscount basket
+itemDiscount item discount basket
+  | numBetween discount 0 100 = map applyDiscount basket
+  | otherwise = error "discount must be between 0 and 100!"
   where
     applyDiscount (a, b)
       | a == item = (a, b - (b * (fromIntegral discount) / 100.0))
       | otherwise = (a, b)
+
+numBetween :: Integer -> Integer -> Integer -> Bool
+numBetween a lowerBound upperBound
+  | a >= lowerBound = a <= upperBound
+  | otherwise = False
