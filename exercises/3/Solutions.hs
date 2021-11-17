@@ -54,10 +54,15 @@ all' :: Eq a => (a -> Bool) -> [a] -> Bool
 all' f xs = filter f xs == xs
 
 any'' :: (a -> Bool) -> [a] -> Bool
-any'' f xs = foldr (||) False (map f xs)
+any'' f = foldr ((||) . f) False
 
 all'' :: (a -> Bool) -> [a] -> Bool
-all'' f xs = foldr (&&) True (map f xs)
+all'' f = foldr ((&&) . f) True
+
+{-
+  above function with map, if lecturer asks -
+    any'' f = foldr (||) False (map f xs)
+-}
 
 {-
   Exercise 3
@@ -93,7 +98,7 @@ unzip' = foldr f acc
 -}
 
 length' :: [a] -> Int
-length' = sum . map (\x -> 1)
+length' = sum . map (const 1)
 
 length'' :: [a] -> Int
 length'' = foldr (\_ acc -> acc + 1) 0
@@ -116,7 +121,7 @@ ff :: Integer -> [Integer] -> Integer
 ff upperBound = sumUntil . multiply10 . nonNegative
   where
     nonNegative xs = [x | x <- xs, x >= 0]
-    multiply10 = map (\x -> x * 10)
+    multiply10 = map (* 10)
     sumUntil = foldr (\x acc -> if acc < upperBound then acc + x else acc) 0
 
 {-
@@ -155,4 +160,4 @@ total f n
 total' :: (Integer -> Integer) -> Integer -> Integer
 total' f n
   | n < 0 = error "negative number provided!"
-  | otherwise = (sum . map (\x -> f x)) [0..n]
+  | otherwise = (sum . map f) [0..n]
