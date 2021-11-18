@@ -32,7 +32,31 @@ type Position = (Float, Float)
 
 overlaps :: Shape -> Shape -> Bool
 overlaps (Circle r1 (x1, y1)) (Circle r2 (x2, y2)) =
-  sqrt((x1 - x2)^2 + (y1 - y2)^2) <= r1 + r2
+  sqrt((x1 - x2)^2 + (y1 - y2)^2) < r1 + r2
+
+-- Algorithm referenced from: https://stackoverflow.com/a/1879223
+overlaps (Circle r (x1, y1)) (Rectangle h w (x2, y2)) = distance < r
+  where
+    distance = sqrt((x1 - cx)^2 + (y1 - cy)^2)
+    cx = clamp rLeft rRight x1
+    cy = clamp rTop rBottom y1
+    (rLeft, rRight) = (x2 - (w/2), x2 + (w/2))
+    (rTop, rBottom) = (y2 + (h/2), y2 - (h/2))
+
+overlaps a@(Rectangle h w (x1, y1)) b@(Circle r (x2, y2)) =
+  overlaps b a
+
+-- Great rectangle intersection visualisation - https://silentmatt.com/rectangle-intersection/
+overlaps (Rectangle h1 w1 (x1, y1)) (Rectangle h2 w2 (x2, y2)) =
+  (r1Left < r2Right) && (r1Right > r2Left) && (r1Top > r1Bottom) && (r1Bottom < r1Top)
+  where
+    (r1Left, r1Right) = (x1 - (w1/2), x1 + (w1/2))
+    (r1Top, r1Bottom) = (y1 + (h1/2), y1 - (h1/2))
+    (r2Left, r2Right) = (x2 - (w2/2), x2 + (w2/2))
+    (r2Top, r2Bottom) = (y2 + (h2/2), y2 - (h2/2))
+
+clamp :: Float -> Float -> Float -> Float
+clamp min' max' = max min' . min max'
 
 {-
   Exercise 2
@@ -76,9 +100,8 @@ all'' f = foldr ((&&) . f) True
 -}
 
 unzip' :: [(a,b)] -> ([a],[b])
-unzip' = foldr f acc
+unzip' = foldr f ([],[])
   where
-    acc = ([],[])
     f (x,y) (xs,ys) = (x:xs, y:ys)
 
 -- Example => unzip' [(1,'a'),(2,'b'),(3,'c')]
@@ -118,10 +141,8 @@ length'' = foldr (\_ acc -> acc + 1) 0
 -}
 
 ff :: Integer -> [Integer] -> Integer
-ff upperBound = sumUntil . multiply10 . nonNegative
+ff upperBound = sumUntil . map (* 10) . filter (>= 0)
   where
-    nonNegative xs = [x | x <- xs, x >= 0]
-    multiply10 = map (* 10)
     sumUntil = foldr (\x acc -> if acc < upperBound then acc + x else acc) 0
 
 {-
@@ -161,3 +182,20 @@ total' :: (Integer -> Integer) -> Integer -> Integer
 total' f n
   | n < 0 = error "negative number provided!"
   | otherwise = (sum . map f) [0..n]
+
+iter' :: Integer -> (a -> a) -> (a -> a)
+iter' n f
+  | n <= 0 = id
+  | otherwise = f . iter' (n - 1) f
+
+iter'' :: Integer -> (a -> a) -> (a -> a)
+iter'' n f = foldr (.) id functions
+  where
+    functions = replicate (fromIntegral n) f
+
+splits :: [a] -> [([a], [a])]
+splits xs = [splitAt' x xs | x <- [0..(length xs)]]
+
+-- Implementation of Prelude splitAt
+splitAt' :: Int -> [a] -> ([a], [a])
+splitAt' n xs = (take n xs, drop n xs)
