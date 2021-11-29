@@ -78,7 +78,8 @@ all' :: Eq a => (a -> Bool) -> [a] -> Bool
 all' f xs = filter f xs == xs
 
 any'' :: (a -> Bool) -> [a] -> Bool
-any'' f = foldr ((||) . f) False
+-- any'' f = foldr ((||) . f) False
+any'' f = foldl (\acc x -> f x || acc) False
 
 all'' :: (a -> Bool) -> [a] -> Bool
 all'' f = foldr ((&&) . f) True
@@ -106,6 +107,12 @@ unzip' = foldr f ([],[])
 
 -- Example => unzip' [(1,'a'),(2,'b'),(3,'c')]
 
+-- Using foldl function
+unzip'' :: [(a,b)] -> ([a],[b])
+unzip'' = foldl f ([],[])
+  where
+    f (xs,ys) (x,y) = (xs ++ [x], ys ++ [y])
+
 {-
   Exercise 4
 
@@ -126,6 +133,9 @@ length' = sum . map (const 1)
 length'' :: [a] -> Int
 length'' = foldr (\_ acc -> acc + 1) 0
 
+length''' :: [a] -> Int
+length''' = foldl(\acc _ -> acc + 1) 0
+
 {-
   Exercise 5
 
@@ -143,7 +153,7 @@ length'' = foldr (\_ acc -> acc + 1) 0
 ff :: Integer -> [Integer] -> Integer
 ff upperBound = sumUntil . map (* 10) . filter (>= 0)
   where
-    sumUntil = foldr (\x acc -> if acc < upperBound then acc + x else acc) 0
+    sumUntil = foldr (\x acc -> if (acc + x) < upperBound then acc + x else acc) 0
 
 {-
   Example where result with foldl differs
@@ -177,11 +187,29 @@ total f n
   | n < 0 = error "negative number provided!"
   | otherwise = foldl (\acc x -> acc + f x) 0 [0..n]
 
-
 total' :: (Integer -> Integer) -> Integer -> Integer
 total' f n
   | n < 0 = error "negative number provided!"
   | otherwise = (sum . map f) [0..n]
+
+{-
+  Exercise 7
+
+    Write a function
+
+    iter :: Integer -> (a -> a) -> (a -> a)
+
+    that composes the given function f :: a -> a with itself n :: Integer times,
+
+    e.g., iter 2 f = f . f.
+
+    Give two versions of this function: one based on recursion, and the one
+    based on the idea of first creating (by using replicate) the list of n
+    copies of f and then folding this list.
+
+    For the cases when n ≤ 0, the Prelude function id,
+    defined as id x = x, should be returned.
+-}
 
 iter' :: Integer -> (a -> a) -> (a -> a)
 iter' n f
@@ -192,6 +220,16 @@ iter'' :: Integer -> (a -> a) -> (a -> a)
 iter'' n f = foldr (.) id functions
   where
     functions = replicate (fromIntegral n) f
+{-
+  Exercise 8
+
+    Write a function
+
+    splits :: [a] -> [([a],[a])]
+
+    which returns all the ways that a list can be split into two consecutive ones,
+    e.g., splits "Spy" == [("","Spy"),("S","py"),("Sp","y"),("Spy","")]
+-}
 
 splits :: [a] -> [([a], [a])]
 splits xs = [splitAt' x xs | x <- [0..(length xs)]]
