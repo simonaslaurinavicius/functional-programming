@@ -207,7 +207,7 @@ data Result a = OK a | Error String
 composeResult :: (a -> Result b) -> (b -> Result c) -> (a -> Result c)
 composeResult f g = g' . f
     where
-        g' (Error message) = error message
+        g' (Error message) = Error ("Error occured in f" ++ message)
         g' (OK a) = g a
 
 fun1 :: (a -> Result a)
@@ -247,9 +247,9 @@ sieve (x:xs) = x : sieve [y | y <- xs, mod y x > 0]
 goldbach :: Integer -> Bool
 goldbach n = length even' == length satisfies
     where
-        even' = filter even [4..n]
+        even' = [4,6..n]
         satisfies = Set.fromList [x + y | x <- primes', y <- primes', elem (x + y) even']
-        primes' = take (fromIntegral (div n 2)) primes
+        primes' = takeWhile (<= n) primes
 
 {-
     Exercise 7
@@ -282,8 +282,8 @@ streamIterate :: (a -> a) -> a -> Stream a
 streamIterate f seed = Cons seed (streamIterate f (f seed))
 
 streamInterleave :: Stream a -> Stream a -> Stream a
-streamInterleave (Cons x stream1) (Cons y stream2) =
-    Cons x (Cons y (streamInterleave stream1 stream2))
+streamInterleave (Cons x stream1) stream2 =
+    Cons x (streamInterleave stream2 stream1)
 
 {- Stream examples -}
 nats :: Integer -> Stream Integer
